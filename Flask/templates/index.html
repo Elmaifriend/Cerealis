@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo WebSocket</title>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Vista del dron</h1>
+    <img id="video" width="320" src="/static/video.jpg" />
+    <br>
+    <button onclick="startDemo()">Iniciar demo</button>
+
+    <script>
+        const socket = io("http://" + location.hostname + ":5000");
+        const video = document.getElementById("video");
+
+        let lastFrameTime = Date.now();
+        const TIMEOUT_MS = 1000;
+        const fallbackImage = "/static/video.jpg";
+
+        let currentBlobUrl = null;
+
+        socket.on('connect', () => {
+            console.log("✅ Conectado al servidor WebSocket");
+        });
+
+        socket.on('message', (event) => {
+            console.log("📩 Mensaje del servidor:", event);
+            if (event === "start_demo") {
+                alert("¡Comenzando demo de vuelo!");
+            }
+        });
+
+        socket.on('image', (data) => {
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+            }
+            const blob = new Blob([data], { type: 'image/png' });
+            currentBlobUrl = URL.createObjectURL(blob);
+            video.src = currentBlobUrl;
+            lastFrameTime = Date.now();
+        });
+
+        function startDemo() {
+            socket.emit("message", "start_demo");
+        }
+
+        setInterval(() => {
+            if (Date.now() - lastFrameTime > TIMEOUT_MS) {
+                if (video.src !== location.origin + fallbackImage) {
+                    if (currentBlobUrl) {
+                        URL.revokeObjectURL(currentBlobUrl);
+                        currentBlobUrl = null;
+                    }
+                    video.src = fallbackImage;
+                }
+            }
+        }, 500);
+    </script>
+</body>
+</html>
