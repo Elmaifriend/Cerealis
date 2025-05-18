@@ -14,27 +14,24 @@ def index():
 
 @socketio.on('message')
 def handle_message(message):
-    print("💬 Comando recibido:", type(message))
-    
     if isinstance(message, str) and message == "start_demo":
         for client in clients:
             emit('message', "start_demo", room=client)
     else:
         try:
-            #print(f"📸 Bytes recibidos: {len(message)}")
-            # Guardar temporalmente para debug
-            with open("frame.jpg", "wb") as f:
-                f.write(message)
-
-            image = Image.open(io.BytesIO(message))
-            img_io = io.BytesIO()
-            image.save(img_io, 'PNG')
-            img_io.seek(0)
-
             for client in clients:
-                emit('image', img_io.read(), room=client)
+                emit('image', message, room=client)
         except Exception as e:
             print("❌ Error mostrando imagen:", e)
+
+@socketio.on('drone_command')
+def handle_drone_command(data):
+    action = data.get('action')
+    state = data.get('state')  # 'start' o 'stop'
+    print(f"🛸 Comando de dron: {action} - {state}")
+
+    for client in clients:
+        emit('drone_command', data, room=client)
 
 @socketio.on('connect')
 def handle_connect():

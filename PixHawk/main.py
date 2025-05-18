@@ -24,6 +24,18 @@ def message(data):
     if data == "start_demo":
         asyncio.run(start_demo())
 
+@sio.on('drone_command')
+def handle_remote_drone_command(data):
+    action = data.get('action')
+    state = data.get('state')
+
+    if state == 'start':
+        print(f"🟢 Iniciar {action}")
+    elif state == 'stop':
+        # Detener movimiento
+        print(f"🔴 Detener {action}")
+        # Aquí detienes los motores
+
 async def send_camera_frames():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
