@@ -1,12 +1,21 @@
 import socketio
 import cv2
 import asyncio
+import time
 from dronekit import connect, VehicleMode, LocationGlobalRelative
 
 # Conexión a la Pixhawk
-connection_string = 'COM6'  # Cambia a '/dev/ttyAMA0' o UDP si estás en Linux
+#connection_string = 'COM6'  # Cambia a '/dev/ttyAMA0' o UDP si estás en Linux
+connection_string = '/dev/ttyACM0'
 vehicle = connect(connection_string, wait_ready=True)
+
 vehicle.parameters['ARMING_CHECK'] = 0
+
+vehicle.mode = VehicleMode("STABILIZE")  # Asegura modo estable
+
+#while not vehicle.armed:
+ #   print("⏳ Esperando armado forzado...")
+  #  time.sleep(1)
 
 sio = socketio.Client()
 
@@ -26,15 +35,15 @@ def message(data):
 
 @sio.on('drone_command')
 def handle_remote_drone_command(data):
+    print(f"📩 Datos recibidos: {data}")  # Depuración
     action = data.get('action')
     state = data.get('state')
 
     if state == 'start':
-        print(f"🟢 Iniciar {action}")
+        simulate_movement(action)
     elif state == 'stop':
-        # Detener movimiento
-        print(f"🔴 Detener {action}")
-        # Aquí detienes los motores
+        stop_movement()
+
 
 async def send_camera_frames():
     cap = cv2.VideoCapture(0)
@@ -68,7 +77,7 @@ async def start_demo():
     vehicle.simple_takeoff(10)
 
     while vehicle.location.global_relative_frame.alt < 9:
-        print(f"Altura actual: {vehicle.location.global_relative_frame.alt} m")
+        #print(f"Altura actual: {vehicle.location.global_relative_frame.alt} m")
         await asyncio.sleep(1)
 
     print("➡️ Moviendo hacia adelante...")
@@ -84,6 +93,35 @@ async def start_demo():
     await asyncio.sleep(5)
     vehicle.armed = False
     print("✅ Vuelo de demostración completado.")
+
+def simulate_movement(direction):
+    """
+    Simula movimiento enviando override a los canales del RC.
+    1: roll (izquierda/derecha)
+    2: pitch (adelante/atrás)
+    3: throttle (potencia)
+    4: yaw (giro)
+    """
+    neutral = 1500
+    override = {
+        'forward': {2: 1600},     # pitch adelante
+        'backward': {2: 1400},    # pitch atrás
+        'left': {1: 1400},        # roll izquierda
+        'right': {1: 1600}        # roll derecha
+    }
+
+    if direction in override:
+        vehicle.channels.overrides = override[direction]
+        print(f"🛸 Simulando movimiento: {direction}")
+    else:
+        stop_movement()
+
+def stop_movement():
+    vehicle.channels.overrides = {}
+    print("✋ Movimiento detenido")
+
+
+
 
 def main():
     sio.connect('http://localhost:5000')  # Cambia la IP si usas red local
