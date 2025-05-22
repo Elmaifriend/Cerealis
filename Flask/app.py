@@ -12,6 +12,10 @@ clients = []
 def index():
     return render_template('index.html')
 
+@app.route('/statistics')
+def statistics():
+    return render_template('statistics.html')
+
 @socketio.on('message')
 def handle_message(message):
     if isinstance(message, str) and message == "start_demo":
@@ -47,4 +51,4 @@ def handle_disconnect():
 
 if __name__ == "__main__":
     print("🚀 Servidor Flask WebSocket corriendo en ws://localhost:5000")
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=True)
