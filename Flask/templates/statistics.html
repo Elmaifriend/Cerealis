@@ -88,130 +88,22 @@
                         </label>
                     </div>
                 </div>
-                <div class="grid grid-rows-2">
-                    <!-- Imagen de video -->
-                    <div class="flex flex-col gap-2 items-center p-6">
-                        <h1 class="text-xl font-bold">Vista del Dron</h1>
-                        <img
-                            id="video"
-                            src="/static/video.jpg"
-                            alt="Vista del dron"
-                            class="rounded h-full aspect-video"
-                        />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                    <div class="bg-base-100 p-4 rounded-xl shadow">
+                        <h3 class="font-bold mb-2">Producción mensual (kg)</h3>
+                        <canvas id="chart-produccion"></canvas>
                     </div>
-
-                    <!-- Area de Control -->
-                    <div
-                        class="tabs tabs-box grid grid-cols-2 grid-rows-[auto_1fr]"
-                    >
-                        <!-- Control de Rutas -->
-                        <input
-                            type="radio"
-                            name="control-tabs"
-                            class="tab"
-                            aria-label="Planificar Ruta"
-                            checked="checked"
-                        />
-                        <div
-                            class="tab-content bg-base-100 border-base-300 col-span-2"
-                        >
-                            <div class="grid grid-rows-[1fr_auto] h-full gap-2">
-                                <div
-                                    id="map"
-                                    class="rounded border z-0 h-full"
-                                ></div>
-                                <div class="flex gap-2 justify-end">
-                                    <button
-                                        class="btn btn-primary"
-                                        id="iniciar-vuelo"
-                                    >
-                                        Iniciar Vuelo
-                                    </button>
-                                    <button
-                                        class="btn btn-primary btn-soft"
-                                        id="reiniciar-waypoints"
-                                    >
-                                        Reiniciar Waypoints
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Control Manual -->
-                        <input
-                            type="radio"
-                            name="control-tabs"
-                            class="tab"
-                            aria-label="Control Manual"
-                        />
-                        <div
-                            class="tab-content bg-base-100 border-base-300 col-span-2"
-                        >
-                            <div
-                                class="grid grid-cols-3 grid-rows-3 tems-center justify-items-center h-full"
-                            >
-                                <div
-                                    class="flex flex-col items-center col-start-2 row-start-1"
-                                >
-                                    <span> Enfrente </span>
-                                    <button
-                                        id="forward"
-                                        class="btn btn-primary rounded-full"
-                                    >
-                                        <box-icon
-                                            name="up-arrow-circle"
-                                            color="white"
-                                            type="solid"
-                                        ></box-icon>
-                                    </button>
-                                </div>
-                                <div
-                                    class="flex flex-col-reverse items-center col-start-2 row-start-3"
-                                >
-                                    <span> Atrás </span>
-                                    <button
-                                        id="backward"
-                                        class="btn btn-primary rounded-full"
-                                    >
-                                        <box-icon
-                                            name="down-arrow-circle"
-                                            color="white"
-                                            type="solid"
-                                        ></box-icon>
-                                    </button>
-                                </div>
-                                <div
-                                    class="flex flex-col items-center col-start-1 row-start-2"
-                                >
-                                    <span> Izquierda </span>
-                                    <button
-                                        id="left"
-                                        class="btn btn-primary rounded-full"
-                                    >
-                                        <box-icon
-                                            name="left-arrow-circle"
-                                            color="white"
-                                            type="solid"
-                                        ></box-icon>
-                                    </button>
-                                </div>
-                                <div
-                                    class="flex flex-col items-center col-start-3 row-start-2"
-                                >
-                                    <span> Derecha </span>
-                                    <button
-                                        id="right"
-                                        class="btn btn-primary rounded-full"
-                                    >
-                                        <box-icon
-                                            name="right-arrow-circle"
-                                            color="white"
-                                            type="solid"
-                                        ></box-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="bg-base-100 p-4 rounded-xl shadow">
+                        <h3 class="font-bold mb-2">Promedio de humedad (%)</h3>
+                        <canvas id="chart-humedad"></canvas>
+                    </div>
+                    <div class="bg-base-100 p-4 rounded-xl shadow">
+                        <h3 class="font-bold mb-2">Salud de cultivos</h3>
+                        <canvas id="chart-salud"></canvas>
+                    </div>
+                    <div class="bg-base-100 p-4 rounded-xl shadow">
+                        <h3 class="font-bold mb-2">Tipos de cultivos</h3>
+                        <canvas id="chart-cultivos"></canvas>
                     </div>
                 </div>
             </div>
@@ -236,16 +128,16 @@
                         </button>
                     </li>
                     <li>
-                        <button class="btn btn-ghost justify-start">
+                        <a class="btn btn-ghost justify-start" href="/">
                             <box-icon name="joystick-button"></box-icon>
                             Control de Vuelo
-                        </button>
+                        </a>
                     </li>
                     <li>
-                        <a class="btn btn-ghost justify-start" href="/statistics">
+                        <button class="btn btn-ghost justify-start">
                             <box-icon name="pie-chart"></box-icon>
                             Estadísticas
-                        </a>
+                        </button>
                     </li>
                     <li>
                         <button class="btn btn-ghost justify-start">
@@ -400,6 +292,90 @@
                     send("stop");
                 });
             }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Gráfica de Producción Mensual
+            new Chart(document.getElementById("chart-produccion"), {
+                type: "bar",
+                data: {
+                    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
+                    datasets: [
+                        {
+                            label: "kg cosechados",
+                            data: [120, 150, 180, 130, 200, 175],
+                            backgroundColor: "#658C2D",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                    },
+                },
+            });
+
+            // Gráfica de Humedad Promedio
+            new Chart(document.getElementById("chart-humedad"), {
+                type: "line",
+                data: {
+                    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
+                    datasets: [
+                        {
+                            label: "Humedad (%)",
+                            data: [55, 60, 58, 62, 65, 63],
+                            borderColor: "#849D58",
+                            fill: false,
+                            tension: 0.3,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                },
+            });
+
+            // Gráfica de Salud de Cultivos
+            new Chart(document.getElementById("chart-salud"), {
+                type: "radar",
+                data: {
+                    labels: ["Nitrógeno", "Potasio", "Fósforo", "pH", "Plagas"],
+                    datasets: [
+                        {
+                            label: "Nivel óptimo (%)",
+                            data: [85, 90, 80, 75, 60],
+                            backgroundColor: "rgba(101, 140, 45, 0.2)",
+                            borderColor: "#658C2D",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                },
+            });
+
+            // Gráfica de Tipos de Cultivos
+            new Chart(document.getElementById("chart-cultivos"), {
+                type: "doughnut",
+                data: {
+                    labels: ["Maíz", "Trigo", "Tomate", "Chía"],
+                    datasets: [
+                        {
+                            data: [40, 25, 20, 15],
+                            backgroundColor: [
+                                "#658C2D",
+                                "#849D58",
+                                "#445828",
+                                "#A4BF65",
+                            ],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                },
+            });
         </script>
     </body>
 </html>
